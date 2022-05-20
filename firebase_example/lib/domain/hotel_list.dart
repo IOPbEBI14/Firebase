@@ -21,7 +21,7 @@ class HotelList extends StateNotifier<Stream<List<HotelPreview>>> {
         .collection('hotels')
         .withConverter<HotelPreview>(
             fromFirestore: (snapshot, _) =>
-                HotelPreview.fromJson(snapshot.data()!),
+                HotelPreview.fromJson(snapshot.id, snapshot.data()!),
             toFirestore: (hotel, _) => hotel.toJson());
     if (sortOrder == SortOrder.none) {
       return _hotels
@@ -42,5 +42,17 @@ class HotelList extends StateNotifier<Stream<List<HotelPreview>>> {
       sortOrder = SortOrder.asc;
     }
     state = getDataFromDatabase();
+  }
+
+  Future<bool> editHotel(HotelPreview hotel) async {
+    try {
+      await _hotels
+          .doc(hotel.docId)
+          .update(// updates the movie document having id of moviedId
+              hotel.toJson());
+      return true; //// return true after successful updation .
+    } catch (e) {
+      return Future.error(e); //return error
+    }
   }
 }
