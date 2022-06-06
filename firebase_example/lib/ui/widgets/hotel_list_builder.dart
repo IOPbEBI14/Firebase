@@ -1,4 +1,5 @@
 import 'package:firebase_example/domain/app_state.dart';
+import 'package:firebase_example/ui/widgets/login_form.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,13 +35,14 @@ class HotelListBuilder extends ConsumerWidget {
                 }),
           ),
           Builder(
-              builder: (context) => IconButton(
+              builder: (localContext) => IconButton(
                     icon: Icon(iconsState.loginIcon),
                     onPressed: () {
                       if (iconsState.loginIcon == Icons.logout) {
                         iconProvider.logout();
                       } else {
-                        iconProvider.login();
+                        Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => LoginForm()));
                       }
                     },
                   )),

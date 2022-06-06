@@ -16,11 +16,20 @@ class AppStateNotifier extends StateNotifier<AppState> {
     state = AppState(state.sortIcon, icon);
   }
 
-  void login() {
+  Future<void> login(
+      BuildContext context, String email, String password) async {
     FirebaseAuth auth = FirebaseAuth.instance;
-    auth.signInAnonymously().then((result) {
-      state = AppState.newState(state.sortIcon, Icons.logout, result.user!);
-    });
+    try {
+      await auth
+          .signInWithEmailAndPassword(email: email, password: password)
+          .then((result) {
+        state = AppState.newState(state.sortIcon, Icons.logout, result.user!);
+      });
+    } on FirebaseAuthException catch (e) {
+      state =
+          AppState.setLoginError(state.sortIcon, state.loginIcon, e.toString());
+      rethrow;
+    }
   }
 
   void logout() async {
@@ -33,8 +42,11 @@ class AppState {
   IconData sortIcon;
   IconData loginIcon;
   late User loggedUser;
+  String loginError = '';
 
   AppState(this.sortIcon, this.loginIcon);
 
   AppState.newState(this.sortIcon, this.loginIcon, this.loggedUser);
+
+  AppState.setLoginError(this.sortIcon, this.loginIcon, this.loginError);
 }
