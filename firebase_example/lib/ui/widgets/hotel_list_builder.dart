@@ -21,6 +21,7 @@ class HotelListBuilder extends ConsumerWidget {
     _hotels = provider.getDataFromDatabase();
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.green,
         actions: [
           Builder(
             builder: (context) => IconButton(
@@ -51,97 +52,98 @@ class HotelListBuilder extends ConsumerWidget {
       body: StreamBuilder<List<HotelPreview>>(
           stream: _hotels,
           builder: (context, snapshot) {
-            if (snapshot.hasError) {
+            if (iconsState.loginIcon == Icons.login) {
+              return const Center(
+                child: Text(
+                  'You should be login to see this content',
+                  style: TextStyle(color: Colors.green),
+                ),
+              );
+            } else if (snapshot.hasError) {
               return Text(snapshot.error.toString());
             } else if (snapshot.hasData) {
               List<HotelPreview> _hotelList = snapshot.data!;
-              return //GridViewBuilder(hotelList: snapshot.data!);
-                  ListView.builder(
-                      shrinkWrap: true,
-                      controller: ScrollController(keepScrollOffset: false),
-                      itemCount: _hotelList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return SizedBox(
-                          height: 200,
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Container(
-                              padding: const EdgeInsets.all(40),
-                              decoration: BoxDecoration(
-                                  color: Colors.grey.shade300,
-                                  borderRadius: BorderRadius.circular(45)),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                      child: FutureBuilder(
-                                          future: storage
-                                              .ref(
-                                                  'images/${_hotelList[index].poster}')
-                                              .getDownloadURL(),
-                                          builder: (context, assetSnapshot) {
-                                            return assetSnapshot.hasData
-                                                ? Image.network(
-                                                    assetSnapshot.data
-                                                        .toString(),
-                                                    fit: BoxFit.scaleDown,
-                                                  )
-                                                : const Center(
-                                                    child:
-                                                        CircularProgressIndicator());
-                                          })),
-                                  Expanded(
-                                    child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Text(
-                                            _hotelList[index].name,
-                                            maxLines: 2,
-                                            textAlign: TextAlign.center,
+              return ListView.builder(
+                  shrinkWrap: true,
+                  controller: ScrollController(keepScrollOffset: false),
+                  itemCount: _hotelList.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return SizedBox(
+                      height: 200,
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Container(
+                          padding: const EdgeInsets.all(40),
+                          decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(45)),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                  child: FutureBuilder(
+                                      future: storage
+                                          .ref(
+                                              'images/${_hotelList[index].poster}')
+                                          .getDownloadURL(),
+                                      builder: (context, assetSnapshot) {
+                                        return assetSnapshot.hasData
+                                            ? Image.network(
+                                                assetSnapshot.data.toString(),
+                                                fit: BoxFit.scaleDown,
+                                              )
+                                            : const Center(
+                                                child:
+                                                    CircularProgressIndicator());
+                                      })),
+                              Expanded(
+                                child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Text(
+                                        _hotelList[index].name,
+                                        maxLines: 2,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      QuantityInput(
+                                        inputWidth: 30,
+                                        value: _hotelList[index].rating,
+                                        onChanged: (hotelRating) =>
+                                            provider.editHotel(_hotelList[index]
+                                                .copyWith(
+                                                    rating: int.parse(
+                                                        hotelRating.replaceAll(
+                                                            ',', '')))),
+                                        maxValue: 10,
+                                      ),
+                                      Expanded(
+                                        child: TextButton(
+                                          style: ElevatedButton.styleFrom(
+                                            primary: _hotelList[index].booked
+                                                ? Colors.red
+                                                : Colors.lightBlue,
+                                            // background
+                                            onPrimary:
+                                                Colors.white, // foreground
                                           ),
-                                          QuantityInput(
-                                            inputWidth: 30,
-                                            value: _hotelList[index].rating,
-                                            onChanged: (hotelRating) =>
-                                                provider.editHotel(
-                                                    _hotelList[index].copyWith(
-                                                        rating: int.parse(
-                                                            hotelRating
-                                                                .replaceAll(
-                                                                    ',', '')))),
-                                            maxValue: 10,
+                                          onPressed: () => provider.editHotel(
+                                              _hotelList[index].copyWith(
+                                                  booked: !_hotelList[index]
+                                                      .booked)),
+                                          child: const Text(
+                                            'Я здесь был',
+                                            textAlign: TextAlign.justify,
                                           ),
-                                          Expanded(
-                                            child: TextButton(
-                                              style: ElevatedButton.styleFrom(
-                                                primary:
-                                                    _hotelList[index].booked
-                                                        ? Colors.red
-                                                        : Colors.lightBlue,
-                                                // background
-                                                onPrimary:
-                                                    Colors.white, // foreground
-                                              ),
-                                              onPressed: () => provider
-                                                  .editHotel(_hotelList[index]
-                                                      .copyWith(
-                                                          booked:
-                                                              !_hotelList[index]
-                                                                  .booked)),
-                                              child: const Text(
-                                                'Я здесь был',
-                                                textAlign: TextAlign.justify,
-                                              ),
-                                            ),
-                                          )
-                                        ]),
-                                  )
-                                ],
-                              ),
-                            ),
+                                        ),
+                                      )
+                                    ]),
+                              )
+                            ],
                           ),
-                        );
-                      });
+                        ),
+                      ),
+                    );
+                  });
             } else {
               return const CircularProgressIndicator();
             }
